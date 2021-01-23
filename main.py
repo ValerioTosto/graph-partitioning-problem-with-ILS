@@ -28,22 +28,8 @@ K = 2
 n = 50000
     
 # Define initial solution S
-def generate_solution(G):
-    nodes = len(G.nodes())
-    nodes_list = list(G.nodes)
-    #print(nodes_list)
-    indexes = random.sample(range(0, nodes), round(nodes/2))
-    for i in indexes:
-        V1.append(nodes_list[i])
-    #print(V1)
-    V2.extend(set(nodes_list) - set(V1))
-    #print(V2)
+(V1, V2) = fun.generate_solution(G)
 
-    
-V1 = []
-V2 = []
-
-generate_solution(G)
 fun.graph_info(K, n, G, V1, V2)
 
 
@@ -60,10 +46,6 @@ fun.draw_graph(G, pos, V1, V2, 'Original Partitions')
 or_V1 = V1.copy()
 or_V2 = V2.copy()
 
-# Make mutation using swap
-def swap():
-    i = random.randint(0, len(r_V1)-1)
-    r_V1[i], r_V2[i] = r_V2[i], r_V1[i]
 
 for x in range(n):
     if (x % 5000 == 0):
@@ -71,7 +53,7 @@ for x in range(n):
     r_V1 = V1.copy()
     r_V2 = V2.copy()
     
-    swap()
+    fun.swap(r_V1, r_V2)
     r_s_cut_size = fun.cut_size_value(G, r_V1, r_V2)
     #fun.draw_graph(G, pos, r_V1, r_V2, 'temp partitions')
     

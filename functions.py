@@ -1,5 +1,6 @@
 import networkx as nx
 import matplotlib.pyplot as plt
+import random
 
 # Draw Partitions
 def draw_graph(G, pos, P1, P2, title = ''):
@@ -29,6 +30,7 @@ def cut_size_value(G, P1, P2):
                 cut_size += 1
     return cut_size
 
+# Print Graph info
 def graph_info(K, n, G, P1, P2):
     print('K - ' + str(K))
     print('# cycle - ' + str(n))
@@ -36,3 +38,22 @@ def graph_info(K, n, G, P1, P2):
     print('Graph edges - ' + str(len(G.edges())))
     print('# Partition 1 - ' + str(len(P1)))
     print('# Partition 2 - ' + str(len(P2)))
+
+# Generate random partitions
+def generate_solution(G):
+    nodes = len(G.nodes())
+    nodes_list = list(G.nodes)
+    V1 = []
+    V2 = []
+    indexes = random.sample(range(0, nodes), round(nodes/2))
+    for i in indexes:
+        V1.append(nodes_list[i])
+    V2.extend(set(nodes_list) - set(V1))
+
+    return (V1, V2)
+
+
+# Make perturb using swap
+def swap(P1, P2):
+    i = random.randint(0, len(P1)-1)
+    P1[i], P2[i] = P2[i], P1[i]
