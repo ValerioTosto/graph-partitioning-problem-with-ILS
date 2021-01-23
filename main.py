@@ -3,7 +3,6 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import random
 import functions as fun
-#import metis
 
 
 # Set up graph structure
@@ -12,7 +11,7 @@ G = nx.Graph()
 file = open("edges.txt", "r")
 for row in file:
     x = row.replace("\n", "").split(" ")
-    G.add_edges_from([(x[0], x[1])])
+    G.add_edges_from([(int(x[0]), int(x[1]))])
 
 # Draw initial graph
 pos = nx.spring_layout(G)
@@ -29,11 +28,10 @@ n = 50000
     
 # Define initial solution S
 (V1, V2) = fun.generate_solution(G)
-
-fun.graph_info(K, n, G, V1, V2)
-
-
 S = [V1, V2]
+
+# Print initial graph info
+fun.graph_info(K, n, G, V1, V2)
 
 s_cut_size = fun.cut_size_value(G, V1, V2)
 #print("cut size: " + str(s_cut_size))
@@ -48,8 +46,8 @@ or_V2 = V2.copy()
 
 
 for x in range(n):
-    if (x % 5000 == 0):
-        print(x)
+    if ( (x/n * 100) % 10 == 0):
+        print('loop percentage: ' + str(x/n * 100) + ' %')
     r_V1 = V1.copy()
     r_V2 = V2.copy()
     
