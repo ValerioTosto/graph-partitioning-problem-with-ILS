@@ -34,14 +34,14 @@ def cut_size_value(G, P1, P2):
 def graph_info(K, n, G, P1, P2):
     print('K - ' + str(K))
     print('# cycle - ' + str(n))
-    print('Graph nodes - ' + str(len(G.nodes())))
+    print('Graph nodes - ' + str(G.number_of_nodes()))
     print('Graph edges - ' + str(len(G.edges())))
     print('# Partition 1 - ' + str(len(P1)))
     print('# Partition 2 - ' + str(len(P2)))
 
 # Generate random partitions
 def generate_solution(G):
-    nodes = len(G.nodes())
+    nodes = G.number_of_nodes()
     nodes_list = list(G.nodes)
     V1 = []
     V2 = []
