@@ -27,8 +27,8 @@ def generate_cut_edge_list(G):
 def cut_size_value(G):
     return len(generate_cut_edge_list(G))
 
-# Print Graph info
-def graph_info(K, n, G):
+# Print problem info
+def problem_info(K, n, G):
     (P1, P2) = get_partitions(G)
     print('K - ', K)
     print('# cycle - ', n)

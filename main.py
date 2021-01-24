@@ -31,8 +31,8 @@ n = 3000
 # Define random solution S0
 S_0 = fun.generate_solution(G)
 
-# Print initial graph info
-fun.graph_info(K, n, S_0)
+# Print problem info
+fun.problem_info(K, n, S_0)
 
 # Draw Original Partitions
 fun.draw_graph(S_0, pos, 'Original Partitions')
