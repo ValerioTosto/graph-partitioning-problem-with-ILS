@@ -26,75 +26,33 @@ plt.show()
 K = 2
 
 # Define cycling number
-n = 5000
+n = 3000
     
-# Define initial solution S
-(V1, V2) = fun.generate_solution(G)
-S = [V1, V2]
+# Define random solution S0
+S_0 = fun.generate_solution(G)
 
 # Print initial graph info
-fun.graph_info(K, n, G, V1, V2)
-
-s_cut_size = fun.cut_size_value(G)
-#s_cut_size = fun.cut_size_value(G, V1, V2)
-#print("cut size: " + str(s_cut_size))
-
+fun.graph_info(K, n, S_0)
 
 # Draw Original Partitions
-fun.draw_graph(G, pos, 'Original Partitions')
-    
+fun.draw_graph(S_0, pos, 'Original Partitions')
 
-or_V1 = V1.copy()
-or_V2 = V2.copy()
+# Apply a given local search algorithm
+S_star = fun.local_search(S_0)
 
-print("V1 - Before editing", V1)
-print("V2 - Before editing", V2)
+# Draw Final LS Partitions
+fun.draw_graph(S_star, pos, 'Final LS Partitions')
 
-#Sn = fun.generate_neighborhood(G, S)
-#
-#print("V1 - After editing", V1)
-#print("V2 - After editing", V2)
-#print("Sn[0] - After editing", Sn[0])
-#print("Sn[1] - After editing", Sn[1])
-Sn = G
 for x in range(n):
     if ( (x/n * 100) % 10 == 0):
         print('loop percentage: ' + str(x/n * 100) + ' %')
 
-    r_V1 = V1.copy()
-    r_V2 = V2.copy()
+    # Perturb the obtained local optima
+    S_first = fun.perturbation(S_star)
+    # Apply local search on the perturbed solution #
+    S_first_star = fun.local_search(S_first)
+    # Accepting criteria
+    S_star = fun.accept(S_star, S_first_star)
 
-    #print("pre neigh - " + str(fun.cut_size_value(Sn)))
-    #Sn = fun.generate_neighborhood(G, [r_V1, r_V2])
-    
-    Smn = fun.generate_multiple_neighborhood_graph(Sn)
-    #Smn = fun.generate_multiple_neighborhood2(G, [r_V1, r_V2])
-    #print(len(Smn))
-    #Sn = fun.best_neighborhood(G, Smn)
-    Sn = fun.best_neighborhood(Smn)
-
-    r_V1, r_V2 = fun.get_partitions(Sn)
-    #r_V1 = Sn[0].copy()
-    #r_V2 = Sn[1].copy()
-    #print("post neigh - " + str(fun.cut_size_value(Sn)))
-
-    #fun.swap(r_V1, r_V2)
-    Sn = fun.swap(Sn, r_V1, r_V2)
-    r_s_cut_size = fun.cut_size_value(Sn)
-    #r_s_cut_size = fun.cut_size_value(G, r_V1, r_V2)
-    #print("post swap - " + str(fun.cut_size_value(Sn)))
-    #fun.draw_graph(G, pos, r_V1, r_V2, 'temp partitions')
-    
-    if r_s_cut_size < s_cut_size:
-        V1 = r_V1.copy()
-        V2 = r_V2.copy()
-        s_cut_size = r_s_cut_size
-    
-
-print("V1 - After editing", V1)
-print("V2 - After editing", V2)
-#print("Sn[0] - After editing", Sn[0])
-#print("Sn[1] - After editing", Sn[1])
-
-# Draw Final Partition Graph
-fun.draw_graph(Sn, pos, 'Final Partitions')
+# Draw Final ILS Partitions
+fun.draw_graph(S_star, pos, 'Final ILS Partitions')
