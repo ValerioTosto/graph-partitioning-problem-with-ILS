@@ -78,11 +78,11 @@ def generate_multiple_neighborhood(G):
             if ext_neighborhood > max_ext_neighborhood:
                     max_ext_neighborhood = ext_neighborhood
                     min_int_neighborhood = int_neighborhood
-                    node = v
+                    node = u
             elif ext_neighborhood == max_ext_neighborhood:
                 if int_neighborhood < min_int_neighborhood:
                     min_int_neighborhood = int_neighborhood
-                    node = v
+                    node = u
     
     for v in G.neighbors(node):
         if G.nodes[node]['partition'] != G.nodes[v]['partition']:
