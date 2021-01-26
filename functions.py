@@ -1,6 +1,7 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 import random
+import statistics
 import os
 
 # Draw Partitions
@@ -46,7 +47,6 @@ def problem_info(K, n, G):
 # Generate random partitions from a given graph
 def generate_solution(G, seed=int):
     nodes = G.number_of_nodes()
-    nodes_list = list(G.nodes)
     random.seed(seed)
     indexes = random.sample(range(0, nodes), round(nodes/2))
     for i,node in enumerate(G.nodes()):
@@ -209,3 +209,14 @@ def accept(G1, G2):
     if cut_size_value(G1) < cut_size_value(G2):
         return G1
     return G2
+
+#Calculate the follow performance indexes:
+# - best solution: migliore soluzione trovata tra le 10 runs;
+# - mean solutions: media delle migliori soluzioni trovate nei 10 runs;
+# - standard deviation (sulla means di cui sopra).
+def calculate_performance(cut_size_list):
+    f = open('images/performance.txt', 'w')
+    f.write('best solution: ' + str(min(cut_size_list)) + '\n')
+    f.write('mean solutions: ' + str(statistics.mean(cut_size_list)) + '\n')
+    f.write('standard deviation: ' + str(statistics.stdev(cut_size_list)) + '\n')
+    f.close()

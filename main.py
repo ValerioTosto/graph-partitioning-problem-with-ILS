@@ -62,6 +62,9 @@ n = 1
 # seeds = [5483, 8373]
 seeds = [4935, 5539, 4827, 6719, 2357, 6385, 6234, 2913, 7284, 8625]
 
+# List of best solution cut-size calculated in each run
+cut_size_list = []
+
 for i in range(run):
     # Generate seed
     seed = seeds[i]
@@ -99,3 +102,5 @@ for i in range(run):
     # Draw Final ILS Partitions
     fun.draw_graph(S_star, pos, str(i) + ' - Final ILS Partitions', imagepath, instance)
 
+    cut_size_list.append(fun.cut_size_value(S_star))
+fun.calculate_performance(cut_size_list)
