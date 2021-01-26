@@ -130,42 +130,31 @@ def identify_isolated_nodes(G, P):
             else:
                 int_neighborhood += 1
         
-        if ext_neighborhood/len(G.neighbors(u)) >= max_ratio and ext_neighborhood > max_ext_neighborhood:
+        u_neighborhood = len(list(G.neighbors(u)))
+        u_ratio = ext_neighborhood/u_neighborhood
+        
+        if u_ratio > max_ratio:
             max_ext_neighborhood = ext_neighborhood
-            max_ratio = ext_neighborhood/len(G.neighbors(u))
+            max_ratio = u_ratio
             node = u
+        elif u_ratio == max_ratio:
+            if ext_neighborhood > max_ext_neighborhood:
+                max_ext_neighborhood = ext_neighborhood
+                node = u
 
     return node
 
-def remove_isolated_nodes(G):
-    Smn = []
-    max_ext_neighborhood = 0
-    max_ratio = 0
-    node = 0 #node with max external neighborhood and min internal neighborhood
+def switch_isolated_nodes(G):
+    (P1, P2) = get_partitions(G)
+    ns_G = G.copy()
 
-    for u in G.nodes():
-        ext_neighborhood = 0
-        int_neighborhood = 0
-        for v in G.neighbors(u):
-            if G.nodes[v]['partition'] != G.nodes[u]['partition']:
-                ext_neighborhood += 1
-            else:
-                int_neighborhood += 1
-        
-        if ext_neighborhood/len(G.neighbors(u)) >= max_ratio and ext_neighborhood > max_ext_neighborhood:
-            max_ext_neighborhood = ext_neighborhood
-            #min_int_neighborhood = int_neighborhood
-            max_ratio = ext_neighborhood/len(G.neighbors(u))
-            node = u
+    node_1 = identify_isolated_nodes(G, P1)
+    node_2 = identify_isolated_nodes(G, P2)
+    #print(node_1, node_2)
 
+    ns_G.nodes[node_1]['partition'], ns_G.nodes[node_2]['partition'] = G.nodes[node_2]['partition'], G.nodes[node_1]['partition']
     
-    for v in G.neighbors(node):
-        if G.nodes[node]['partition'] != G.nodes[v]['partition']:
-            ns_G = G.copy()
-            ns_G.nodes[node]['partition'], ns_G.nodes[v]['partition'] = G.nodes[v]['partition'], G.nodes[node]['partition']
-            Smn.append(ns_G.copy())
-        
-    return Smn
+    return ns_G
 
 def best_neighborhood(Smn):
     index = 0
@@ -185,11 +174,14 @@ def local_search(S0):
         Smn = generate_multiple_neighborhood(St)
         # Select a solution from Smn to replace the current solution St 
         St = best_neighborhood(Smn)
-        
+        #print(cut_size_value(St), cut_size_value(St_2))
         #print('best_local_solution: ', cut_size_value(best_local_solution), ' -> new: ', cut_size_value(St))
 
         # Improving best neighborhood result with:
         # 1. best max_ext/neighbors ratio switch (best P1 with best P2)
+        St_s = switch_isolated_nodes(St)
+        if cut_size_value(St_s) < cut_size_value(St):
+            St = St_s
 
         if cut_size_value(St) < cut_size_value(best_local_solution):
             best_local_solution = St
@@ -203,11 +195,11 @@ def perturbation(G, seed):
     (P1, P2) = get_partitions(G)
     ns_G = G.copy()
     random.seed(seed)
-    for x in range(round(len(P1)/5)): #swap only 5%
-        i = random.randint(0, len(P1)-2)
-        #if max(len(P1)-len(P2), len(P2)-len(P1)) > 1 :
-        #print(len(P1), len(P2), i)
-        ns_G.nodes[P1[i]]['partition'], ns_G.nodes[P2[i]]['partition'] = G.nodes[P2[i]]['partition'], G.nodes[P1[i]]['partition']
+    for x in range(round(len(P1)/5)): #swap only 20%
+        node_1 = random.choice(P1)
+        node_2 = random.choice(P2)
+        #print(node_1, node_2)
+        ns_G.nodes[node_1]['partition'], ns_G.nodes[node_2]['partition'] = G.nodes[node_2]['partition'], G.nodes[node_1]['partition']
     #print('original: ', cut_size_value(G), ' -> final pert: ', cut_size_value(ns_G))
     return ns_G
 
