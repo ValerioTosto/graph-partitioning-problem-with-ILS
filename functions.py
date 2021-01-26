@@ -1,9 +1,11 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 import random
+import os
 
 # Draw Partitions
-def draw_graph(G, pos, title = ''):
+def draw_graph(G, pos, title = '', imagepath = '/', instance = ''):
+    plt.clf()
     (P1, P2) = get_partitions(G)
     nx.draw_networkx_nodes(G, pos, nodelist=P1, node_color='#de3c19')
     nx.draw_networkx_nodes(G, pos, nodelist=P2)
@@ -11,13 +13,17 @@ def draw_graph(G, pos, title = ''):
     nx.draw_networkx_edges(G, pos, arrows=False)
     nx.draw_networkx_edges(G, pos, edgelist=generate_cut_edge_list(G), width=3, alpha=0.5, edge_color='r')
     print(title, ' cut-size - ', cut_size_value(G))
-    plt.title(title + ' cut-size - ' + str(cut_size_value(G)))
-    plt.show()
+    #plt.title(title + ' cut-size - ' + str(cut_size_value(G)))
+    #plt.show()
+    if not os.path.exists(imagepath + instance):
+        os.makedirs(imagepath + instance)
+    plt.savefig(imagepath + instance + '/' + title + ' cut-size - ' + str(cut_size_value(G)) + '.png')
 
 # Generate edge_list from partitions
 def generate_cut_edge_list(G):
+    (P1, P2) = get_partitions(G)
     edge_list = []
-    for u in G.nodes():
+    for i,u in enumerate(P1):
         for v in G.neighbors(u):
             if G.nodes[v]['partition'] != G.nodes[u]['partition']:
                 edge_list.extend([(u,v)])
@@ -38,32 +44,103 @@ def problem_info(K, n, G):
     print('# Partition 2 - ', len(P2))
 
 # Generate random partitions from a given graph
-def generate_solution(G):
+def generate_solution(G, seed=int):
     nodes = G.number_of_nodes()
     nodes_list = list(G.nodes)
+    random.seed(seed)
     indexes = random.sample(range(0, nodes), round(nodes/2))
-    for i in indexes:
-        G.nodes[nodes_list[i]]['partition'] = 1
+    for i,node in enumerate(G.nodes()):
+        if i in indexes:
+            G.nodes[node]['partition'] = 1
+        else:
+            G.nodes[node]['partition'] = 0
     return G
 
 # Get partitions list from a given graph
 def get_partitions(G):
-    nodes_list = list(G.nodes)
     V1 = []
     V2 = []
-    for u in nodes_list:
-        if G.nodes[u]['partition'] == 1:
-            V1.append(u)
-        else:
-            V2.append(u)
+    for u in G.nodes():
+        try:
+            if G.nodes[u]['partition'] == 1:
+                V1.append(u)
+            else:
+                V2.append(u)
+        except:
+            print(u, G.nodes[u])
     return (V1, V2)
 
 # Generate neighborhood from a given graph
 def generate_multiple_neighborhood(G):
+    (P1, P2) = get_partitions(G)
     Smn = []
+    Smn = generate_neighborhood_from_partition(G, P1, Smn)
+    Smn = generate_neighborhood_from_partition(G, P2, Smn)
+        
+    return Smn
 
+
+# Generate neighborhood from a given graph
+def generate_neighborhood_from_partition(G, P, Smn):
     max_ext_neighborhood = 0
     min_int_neighborhood = len(G.edges())
+    node = 0 #node with max external neighborhood and min internal neighborhood
+
+    for i,u in enumerate(P):
+        ext_neighborhood = 0
+        int_neighborhood = 0
+        for v in G.neighbors(u):
+            try:
+                if G.nodes[v]['partition'] != G.nodes[u]['partition']:
+                    ext_neighborhood += 1
+                else:
+                    int_neighborhood += 1
+
+                if ext_neighborhood > max_ext_neighborhood:
+                        max_ext_neighborhood = ext_neighborhood
+                        min_int_neighborhood = int_neighborhood
+                        node = u
+                elif ext_neighborhood == max_ext_neighborhood:
+                    if int_neighborhood < min_int_neighborhood:
+                        min_int_neighborhood = int_neighborhood
+                        node = u
+            
+            except:
+                print(u, G.nodes[u], v, G.nodes[v])
+    
+    for v in G.neighbors(node):
+        if G.nodes[node]['partition'] != G.nodes[v]['partition']:
+            ns_G = G.copy()
+            ns_G.nodes[node]['partition'], ns_G.nodes[v]['partition'] = G.nodes[v]['partition'], G.nodes[node]['partition']
+            Smn.append(ns_G.copy())
+        
+    return Smn
+
+def identify_isolated_nodes(G, P):
+    max_ext_neighborhood = 0
+    max_ratio = 0
+    node = 0 #node with max external neighborhood and min internal neighborhood
+
+    for i,u in enumerate(P):
+        ext_neighborhood = 0
+        int_neighborhood = 0
+        for v in G.neighbors(u):
+            if G.nodes[v]['partition'] != G.nodes[u]['partition']:
+                ext_neighborhood += 1
+            else:
+                int_neighborhood += 1
+        
+        if ext_neighborhood/len(G.neighbors(u)) >= max_ratio and ext_neighborhood > max_ext_neighborhood:
+            max_ext_neighborhood = ext_neighborhood
+            max_ratio = ext_neighborhood/len(G.neighbors(u))
+            node = u
+
+    return node
+
+def remove_isolated_nodes(G):
+    Smn = []
+    max_ext_neighborhood = 0
+    max_ratio = 0
     node = 0 #node with max external neighborhood and min internal neighborhood
 
     for u in G.nodes():
@@ -74,15 +151,13 @@ def generate_multiple_neighborhood(G):
                 ext_neighborhood += 1
             else:
                 int_neighborhood += 1
+        
+        if ext_neighborhood/len(G.neighbors(u)) >= max_ratio and ext_neighborhood > max_ext_neighborhood:
+            max_ext_neighborhood = ext_neighborhood
+            #min_int_neighborhood = int_neighborhood
+            max_ratio = ext_neighborhood/len(G.neighbors(u))
+            node = u
 
-            if ext_neighborhood > max_ext_neighborhood:
-                    max_ext_neighborhood = ext_neighborhood
-                    min_int_neighborhood = int_neighborhood
-                    node = u
-            elif ext_neighborhood == max_ext_neighborhood:
-                if int_neighborhood < min_int_neighborhood:
-                    min_int_neighborhood = int_neighborhood
-                    node = u
     
     for v in G.neighbors(node):
         if G.nodes[node]['partition'] != G.nodes[v]['partition']:
@@ -113,6 +188,9 @@ def local_search(S0):
         
         #print('best_local_solution: ', cut_size_value(best_local_solution), ' -> new: ', cut_size_value(St))
 
+        # Improving best neighborhood result with:
+        # 1. best max_ext/neighbors ratio switch (best P1 with best P2)
+
         if cut_size_value(St) < cut_size_value(best_local_solution):
             best_local_solution = St
         else:
@@ -121,11 +199,14 @@ def local_search(S0):
     return best_local_solution
 
 # Make perturb using swap
-def perturbation(G):
+def perturbation(G, seed):
     (P1, P2) = get_partitions(G)
     ns_G = G.copy()
+    random.seed(seed)
     for x in range(round(len(P1)/5)): #swap only 5%
-        i = random.randint(0, len(P1)-1)
+        i = random.randint(0, len(P1)-2)
+        #if max(len(P1)-len(P2), len(P2)-len(P1)) > 1 :
+        #print(len(P1), len(P2), i)
         ns_G.nodes[P1[i]]['partition'], ns_G.nodes[P2[i]]['partition'] = G.nodes[P2[i]]['partition'], G.nodes[P1[i]]['partition']
     #print('original: ', cut_size_value(G), ' -> final pert: ', cut_size_value(ns_G))
     return ns_G
