@@ -3,9 +3,10 @@ import matplotlib.pyplot as plt
 import random
 import statistics
 import os
+import constant
 
 # Draw Partitions
-def draw_graph(G, pos, title = '', imagepath = '/', instance = ''):
+def draw_graph(G, pos, title = '', instance = ''):
     plt.clf()
     (P1, P2) = get_partitions(G)
     nx.draw_networkx_nodes(G, pos, nodelist=P1, node_color='#de3c19')
@@ -16,9 +17,9 @@ def draw_graph(G, pos, title = '', imagepath = '/', instance = ''):
     print(title, ' cut-size - ', cut_size_value(G))
     #plt.title(title + ' cut-size - ' + str(cut_size_value(G)))
     #plt.show()
-    if not os.path.exists(imagepath + instance):
-        os.makedirs(imagepath + instance)
-    plt.savefig(imagepath + instance + '/' + title + ' cut-size - ' + str(cut_size_value(G)) + '.png')
+    if not os.path.exists(constant.RESULTS_PATH + instance + '/' + constant.IMAGE_PATH):
+        os.makedirs(constant.RESULTS_PATH + instance + '/' + constant.IMAGE_PATH)
+    plt.savefig(constant.RESULTS_PATH + instance + '/' + constant.IMAGE_PATH + '/' + title + ' cut-size - ' + str(cut_size_value(G)) + '.png')
 
 # Generate edge_list from partitions
 def generate_cut_edge_list(G):
@@ -214,8 +215,10 @@ def accept(G1, G2):
 # - best solution: migliore soluzione trovata tra le 10 runs;
 # - mean solutions: media delle migliori soluzioni trovate nei 10 runs;
 # - standard deviation (sulla means di cui sopra).
-def calculate_performance(cut_size_list):
-    f = open('images/performance.txt', 'w')
+def calculate_performance(cut_size_list, instance):
+    if not os.path.exists(constant.RESULTS_PATH + instance + '/'):
+        os.makedirs(constant.RESULTS_PATH + instance + '/')
+    f = open(constant.RESULTS_PATH + instance + '/performance.txt', 'w')
     f.write('best solution: ' + str(min(cut_size_list)) + '\n')
     f.write('mean solutions: ' + str(statistics.mean(cut_size_list)) + '\n')
     f.write('standard deviation: ' + str(statistics.stdev(cut_size_list)) + '\n')

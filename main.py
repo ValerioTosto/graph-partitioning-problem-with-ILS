@@ -3,19 +3,14 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import random
 import functions as fun
+import constant
 
 
 # Set up graph structure
 G = nx.Graph()
 
-path = './instances/'
-imagepath = 'images/'
-#instance = '3elt.graph'
-#instance = 'add32.graph'
-#instance = 'add20.graph'
-#instance = 'test.100.graph'
-instance = 'test.graph'
-with open(path + instance, 'r') as in_file:
+instance = constant.TEST_INSTANCE
+with open(constant.INSTANCES_PATH + instance, 'r') as in_file:
     lines = in_file.readlines()
     for node,line in enumerate(lines):
         node = int(node)
@@ -25,15 +20,6 @@ with open(path + instance, 'r') as in_file:
             G.add_node(node, partition = 0)
             for i in neighborhood:
                 G.add_edge(node, int(i))
-        
-        
-
-# file = open("3elt.graph", "r")
-# for row in file:
-#     x = row.replace("\n", "").split(" ")
-#     G.add_node(int(x[0]), partition = 0)
-#     G.add_node(int(x[1]), partition = 0)
-#     G.add_edge(int(x[0]), int(x[1]))
 
 # Draw initial graph
 pos = nx.spring_layout(G)
@@ -76,7 +62,7 @@ for i in range(run):
     #fun.problem_info(K, n, S_0)
 
     # Draw Original Partitions
-    fun.draw_graph(S_0, pos, str(i) + ' - Original Partitions', imagepath, instance)
+    fun.draw_graph(S_0, pos, str(i) + ' - Original Partitions', instance)
 
     # Needed for python warning
     S_star = S_0
@@ -100,7 +86,10 @@ for i in range(run):
             S_star = fun.accept(S_star, S_first_star)
 
     # Draw Final ILS Partitions
-    fun.draw_graph(S_star, pos, str(i) + ' - Final ILS Partitions', imagepath, instance)
+    fun.draw_graph(S_star, pos, str(i) + ' - Final ILS Partitions', instance)
 
     cut_size_list.append(fun.cut_size_value(S_star))
-fun.calculate_performance(cut_size_list)
+    # S_star2 = fun.switch_isolated_nodes(S_star)
+    # print('cut-size - ', fun.cut_size_value(S_star), fun.cut_size_value(S_star2))
+
+fun.calculate_performance(cut_size_list, instance)
