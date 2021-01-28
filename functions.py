@@ -119,6 +119,7 @@ def generate_neighborhood_from_partition(G, P, Smn):
 
 def identify_isolated_nodes(G, P):
     max_ext_neighborhood = 0
+    min_int_neighborhood = 9999999999999
     max_ratio = 0
     node = 0 #node with max external neighborhood and min internal neighborhood
 
@@ -135,12 +136,12 @@ def identify_isolated_nodes(G, P):
         u_ratio = ext_neighborhood/u_neighborhood
         
         if u_ratio > max_ratio:
-            max_ext_neighborhood = ext_neighborhood
+            min_int_neighborhood = int_neighborhood
             max_ratio = u_ratio
             node = u
         elif u_ratio == max_ratio:
-            if ext_neighborhood > max_ext_neighborhood:
-                max_ext_neighborhood = ext_neighborhood
+            if int_neighborhood < min_int_neighborhood:
+                min_int_neighborhood = int_neighborhood
                 node = u
 
     return node
