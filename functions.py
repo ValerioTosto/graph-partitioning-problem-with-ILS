@@ -200,18 +200,19 @@ def local_search(S0):
 def perturbation(G, seed):
     (P1, P2) = get_partitions(G)
     ns_G = G.copy()
-    random.seed(seed)
-    for x in range(round(len(P1)/5)): #swap only 20%
-        node_1 = random.choice(P1)
-        node_2 = random.choice(P2)
-        #print(node_1, node_2)
-        ns_G.nodes[node_1]['partition'], ns_G.nodes[node_2]['partition'] = G.nodes[node_2]['partition'], G.nodes[node_1]['partition']
+    number_swap = round(20 * min(len(P1), len(P2))/100) #swap only 20%
+
+    for x in range(number_swap):
+        i = random.randint(0, len(P1)-2)
+        if max(len(P1)-len(P2), len(P2)-len(P1)) > 1 :
+            print(len(P1), len(P2), i)
+        ns_G.nodes[P1[i]]['partition'], ns_G.nodes[P2[i]]['partition'] = G.nodes[P2[i]]['partition'], G.nodes[P1[i]]['partition']
+
     #print('original: ', cut_size_value(G), ' -> final pert: ', cut_size_value(ns_G))
     return ns_G
 
 # Accept solution
 def accept(G1, G2):
-    #print('G1: ', cut_size_value(G1), ' -> G2: ', cut_size_value(G2))
     if cut_size_value(G1) < cut_size_value(G2):
         return G1
     return G2
