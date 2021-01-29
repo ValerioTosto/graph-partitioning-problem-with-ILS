@@ -1,5 +1,6 @@
 import networkx as nx
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 import random
 import statistics
 import os
@@ -15,8 +16,11 @@ def draw_graph(G, pos, title = '', instance = ''):
     nx.draw_networkx_edges(G, pos, arrows=False)
     nx.draw_networkx_edges(G, pos, edgelist=generate_cut_edge_list(G), width=3, alpha=0.5, edge_color='r')
     print(title, ' cut-size - ', cut_size_value(G))
-    #plt.title(title + ' cut-size - ' + str(cut_size_value(G)))
-    #plt.show()
+
+    red_patch = mpatches.Patch(color='#de3c19', label='# Partition 1: ' + str(len(P1)))
+    blue_patch = mpatches.Patch(color='#1f78b4', label='# Partition 2: ' + str(len(P2)))
+    plt.legend(handles=[red_patch, blue_patch])
+
     if not os.path.exists(constant.RESULTS_PATH + instance + '/' + constant.IMAGE_PATH):
         os.makedirs(constant.RESULTS_PATH + instance + '/' + constant.IMAGE_PATH)
     plt.savefig(constant.RESULTS_PATH + instance + '/' + constant.IMAGE_PATH + '/' + title + ' cut-size - ' + str(cut_size_value(G)) + '.png')
