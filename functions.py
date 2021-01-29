@@ -66,13 +66,10 @@ def get_partitions(G):
     V1 = []
     V2 = []
     for u in G.nodes():
-        try:
-            if G.nodes[u]['partition'] == 1:
-                V1.append(u)
-            else:
-                V2.append(u)
-        except:
-            print(u, G.nodes[u])
+        if G.nodes[u]['partition'] == 1:
+            V1.append(u)
+        else:
+            V2.append(u)
     return (V1, V2)
 
 # Generate neighborhood from a given graph
@@ -95,23 +92,19 @@ def generate_neighborhood_from_partition(G, P, Smn):
         ext_neighborhood = 0
         int_neighborhood = 0
         for v in G.neighbors(u):
-            try:
-                if G.nodes[v]['partition'] != G.nodes[u]['partition']:
-                    ext_neighborhood += 1
-                else:
-                    int_neighborhood += 1
+            if G.nodes[v]['partition'] != G.nodes[u]['partition']:
+                ext_neighborhood += 1
+            else:
+                int_neighborhood += 1
 
-                if ext_neighborhood > max_ext_neighborhood:
-                        max_ext_neighborhood = ext_neighborhood
-                        min_int_neighborhood = int_neighborhood
-                        node = u
-                elif ext_neighborhood == max_ext_neighborhood:
-                    if int_neighborhood < min_int_neighborhood:
-                        min_int_neighborhood = int_neighborhood
-                        node = u
-            
-            except:
-                print(u, G.nodes[u], v, G.nodes[v])
+        if ext_neighborhood > max_ext_neighborhood:
+                max_ext_neighborhood = ext_neighborhood
+                min_int_neighborhood = int_neighborhood
+                node = u
+        elif ext_neighborhood == max_ext_neighborhood:
+            if int_neighborhood < min_int_neighborhood:
+                min_int_neighborhood = int_neighborhood
+                node = u
     
     for v in G.neighbors(node):
         if G.nodes[node]['partition'] != G.nodes[v]['partition']:
@@ -122,7 +115,6 @@ def generate_neighborhood_from_partition(G, P, Smn):
     return Smn
 
 def identify_isolated_nodes(G, P):
-    max_ext_neighborhood = 0
     min_int_neighborhood = 9999999999999
     max_ratio = 0
     node = 0 #node with max external neighborhood and min internal neighborhood
@@ -156,7 +148,6 @@ def switch_isolated_nodes(G):
 
     node_1 = identify_isolated_nodes(G, P1)
     node_2 = identify_isolated_nodes(G, P2)
-    #print(node_1, node_2)
 
     ns_G.nodes[node_1]['partition'], ns_G.nodes[node_2]['partition'] = G.nodes[node_2]['partition'], G.nodes[node_1]['partition']
     
@@ -175,16 +166,20 @@ def best_neighborhood(Smn):
 def local_search(S0):
     best_local_solution = S0
     St = S0
-    while True:
+    found_better_solution = False
+    i = 0
+
+    # Define stop condition number (0.5% of nodes)
+    max_loop = round(0.5 * S0.number_of_nodes()/100)
+    while not found_better_solution and i < max_loop :
+
         # Generate candidate solutions (partial neighborhood) from St
         Smn = generate_multiple_neighborhood(St)
         # Select a solution from Smn to replace the current solution St 
         St = best_neighborhood(Smn)
-        #print(cut_size_value(St), cut_size_value(St_2))
-        #print('best_local_solution: ', cut_size_value(best_local_solution), ' -> new: ', cut_size_value(St))
 
         # Improving best neighborhood result with:
-        # 1. best max_ext/neighbors ratio switch (best P1 with best P2)
+        # 1. best #ext/#neighbors ratio switch (best P1 with best P2)
         St_s = switch_isolated_nodes(St)
         if cut_size_value(St_s) < cut_size_value(St):
             St = St_s
@@ -192,7 +187,9 @@ def local_search(S0):
         if cut_size_value(St) < cut_size_value(best_local_solution):
             best_local_solution = St
         else:
-            break
+            found_better_solution = True
+
+        i += 1
 
     return best_local_solution
 
