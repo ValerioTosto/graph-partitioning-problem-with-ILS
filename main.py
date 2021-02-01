@@ -21,7 +21,7 @@ with open(constant.INSTANCES_PATH + instance, 'r') as in_file:
                 G.add_edge(node, int(i))
 
 # Draw initial graph
-pos = nx.spring_layout(G, seed=2233)
+pos = nx.spring_layout(G, seed=4935)
 
 # Define K set
 K = 2
