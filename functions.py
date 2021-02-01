@@ -117,7 +117,8 @@ def generate_neighborhood_from_partition(G, P, Smn):
 def identify_isolated_nodes(G, P):
     min_int_neighborhood = 9999999999999
     max_ratio = 0
-    node = 0 #node with max external neighborhood and min internal neighborhood
+    #node = 0 #node with max external neighborhood and min internal neighborhood
+    nodes_indexes_list =[]
 
     for i,u in enumerate(P):
         ext_neighborhood = 0
@@ -132,24 +133,31 @@ def identify_isolated_nodes(G, P):
         u_ratio = ext_neighborhood/u_neighborhood
         
         if u_ratio > max_ratio:
+            nodes_indexes_list.clear()
+            nodes_indexes_list.append(i)
             min_int_neighborhood = int_neighborhood
             max_ratio = u_ratio
-            node = u
+            #node = u
         elif u_ratio == max_ratio:
+            nodes_indexes_list.append(i)
             if int_neighborhood < min_int_neighborhood:
                 min_int_neighborhood = int_neighborhood
-                node = u
+                #node = u
 
-    return node
+    return nodes_indexes_list
 
 def switch_isolated_nodes(G):
     (P1, P2) = get_partitions(G)
     ns_G = G.copy()
 
-    node_1 = identify_isolated_nodes(G, P1)
-    node_2 = identify_isolated_nodes(G, P2)
+    nodes_list_1 = identify_isolated_nodes(G, P1)
+    nodes_list_2 = identify_isolated_nodes(G, P2)
 
-    ns_G.nodes[node_1]['partition'], ns_G.nodes[node_2]['partition'] = G.nodes[node_2]['partition'], G.nodes[node_1]['partition']
+    nodes_to_swap = min(len(nodes_list_1), len(nodes_list_2))
+    for i in range(nodes_to_swap):
+        node_1 = P1[nodes_list_1[i]]
+        node_2 = P2[nodes_list_2[i]]
+        ns_G.nodes[node_1]['partition'], ns_G.nodes[node_2]['partition'] = G.nodes[node_2]['partition'], G.nodes[node_1]['partition']
     
     return ns_G
 
