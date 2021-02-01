@@ -179,6 +179,8 @@ def local_search(S0):
 
     # Define stop condition number (0.5% of nodes)
     max_loop = round(0.5 * S0.number_of_nodes()/100)
+    # Define stop condition number (5% of edges)
+    #max_loop = round(5 * S0.number_of_edges()/100)
     while not found_better_solution and i < max_loop :
 
         # Generate candidate solutions (partial neighborhood) from St
